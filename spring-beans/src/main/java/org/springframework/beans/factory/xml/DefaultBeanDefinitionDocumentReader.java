@@ -93,6 +93,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	@Override
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
 		this.readerContext = readerContext;
+		// 得到Document的根节点，并循环解析
 		doRegisterBeanDefinitions(doc.getDocumentElement());
 	}
 
@@ -146,6 +147,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 
 		preProcessXml(root);
+		// 进入解析方法，根据不同的标签类型执行不同的解析逻辑
 		parseBeanDefinitions(root, this.delegate);
 		postProcessXml(root);
 
@@ -173,9 +175,11 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				if (node instanceof Element) {
 					Element ele = (Element) node;
 					if (delegate.isDefaultNamespace(ele)) {
+						// 默认标签的解析
 						parseDefaultElement(ele, delegate);
 					}
 					else {
+						//解析自定义标签 如mvc tx 等
 						delegate.parseCustomElement(ele);
 					}
 				}
@@ -186,6 +190,8 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 	}
 
+	// 默认标签的解析
+	// 默认标签又分为import,alias,bean,beans四类标签的解析（根据nodeName 判断）。
 	private void parseDefaultElement(Element ele, BeanDefinitionParserDelegate delegate) {
 		if (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) {
 			importBeanDefinitionResource(ele);
@@ -302,11 +308,18 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * Process the given bean element, parsing the bean definition
 	 * and registering it with the registry.
 	 */
+	//  bean 标签的解析
+	// bean标签的解析分为如下两个主要步骤
+	//1. 将bean标签解析为BeanDefinitionHolder
+	//2. 注册BeanDefinitionHolder
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+		//解析bean 标签的各种属性，转换为BeanDefinitionHolder
+		// 核心解析代码
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
+				// 注册BeanDefinitionHolder
 				// Register the final decorated instance.
 				BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());
 			}

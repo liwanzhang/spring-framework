@@ -300,8 +300,11 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @return the number of bean definitions found
 	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
 	 */
+	// 加载bean配置文件
 	@Override
 	public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
+		//根据Resource 构造 EncodedResource
+		//默认情况下encoding和charset都为空
 		return loadBeanDefinitions(new EncodedResource(resource));
 	}
 
@@ -312,12 +315,13 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @return the number of bean definitions found
 	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
 	 */
+	// 加载bean配置文件
 	public int loadBeanDefinitions(EncodedResource encodedResource) throws BeanDefinitionStoreException {
 		Assert.notNull(encodedResource, "EncodedResource must not be null");
 		if (logger.isTraceEnabled()) {
 			logger.trace("Loading XML bean definitions from " + encodedResource);
 		}
-
+        //将EncodedResource放入线程副本，防止循环加载
 		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
 		if (currentResources == null) {
 			currentResources = new HashSet<>(4);
@@ -328,12 +332,17 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 					"Detected cyclic loading of " + encodedResource + " - check your import definitions!");
 		}
 		try {
+			// 从resource里获取输入流
 			InputStream inputStream = encodedResource.getResource().getInputStream();
 			try {
+				//包装流
 				InputSource inputSource = new InputSource(inputStream);
 				if (encodedResource.getEncoding() != null) {
 					inputSource.setEncoding(encodedResource.getEncoding());
 				}
+				//根据inputSource和Resource 来读取配置文件并解析
+				//inputSource用来解析xml得到Dom（用jaxp解析xml的标准输入）
+				//encodedResource.getResource()用来获取xml的验证模式
 				return doLoadBeanDefinitions(inputSource, encodedResource.getResource());
 			}
 			finally {
@@ -388,9 +397,16 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 */
 	protected int doLoadBeanDefinitions(InputSource inputSource, Resource resource)
 			throws BeanDefinitionStoreException {
-
+        // 加载bean配置文件
 		try {
+			//加载配置文件得到Document
+			// 验证配置文件发生在利用InputSource得到Document的过程中
+			// 如果配置文件不通过，这个过程就会抛异常。
 			Document doc = doLoadDocument(inputSource, resource);
+			// 配置文件解析
+			// 得到Document 之后，就可以开始配置文件的解析了。对配置文件的解析的过程，实际上是对配置文件各个标签进行解析转换为BeanDefinitionHolder的过程。
+			// 解析的过程又分为对默认标签（namespace 为 http://www.springframework.org/schema/beans）和自定义标签（除了默认标签之外的标签）的解析。
+			//
 			int count = registerBeanDefinitions(doc, resource);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Loaded " + count + " bean definitions from " + resource);
@@ -432,6 +448,8 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see DocumentLoader#loadDocument
 	 */
 	protected Document doLoadDocument(InputSource inputSource, Resource resource) throws Exception {
+		// 将InputSource 解析为 Document对象
+		// getValidationModeForResource(resource) 获取配置文件的验证模式
 		return this.documentLoader.loadDocument(inputSource, getEntityResolver(), this.errorHandler,
 				getValidationModeForResource(resource), isNamespaceAware());
 	}
@@ -445,6 +463,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see #detectValidationMode
 	 */
 	protected int getValidationModeForResource(Resource resource) {
+		// 1. 获取配置文件的验证模式，基于XSD验证还是基于DTD验证
 		int validationModeToUse = getValidationMode();
 		if (validationModeToUse != VALIDATION_AUTO) {
 			return validationModeToUse;
@@ -509,6 +528,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+		// 创建BeanDefinitionDocumentReader，并调用其registerBeanDefinitions方法解析注册BeanDefinition
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
 		int countBefore = getRegistry().getBeanDefinitionCount();
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));

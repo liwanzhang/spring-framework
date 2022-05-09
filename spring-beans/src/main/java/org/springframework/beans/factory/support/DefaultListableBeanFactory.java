@@ -935,6 +935,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							"] with [" + beanDefinition + "]");
 				}
 			}
+			// 注册的关键在于将beanDefinition 放入map中，其中key为beanName,value为beanDefinition。
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {

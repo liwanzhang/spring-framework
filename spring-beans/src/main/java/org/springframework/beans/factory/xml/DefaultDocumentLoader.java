@@ -61,6 +61,11 @@ public class DefaultDocumentLoader implements DocumentLoader {
 	private static final Log logger = LogFactory.getLog(DefaultDocumentLoader.class);
 
 
+	// 致经历了以下步骤
+	//
+	//构建DocumentBuilderFactory-设置验证模式和命名空间
+	//构建DocumentBuilder-设置错误处理器
+	//解析配置文件得到 Document
 	/**
 	 * Load the {@link Document} at the supplied {@link InputSource} using the standard JAXP-configured
 	 * XML parser.
@@ -68,12 +73,15 @@ public class DefaultDocumentLoader implements DocumentLoader {
 	@Override
 	public Document loadDocument(InputSource inputSource, EntityResolver entityResolver,
 			ErrorHandler errorHandler, int validationMode, boolean namespaceAware) throws Exception {
-
+        // 设置验证模式的关键在于，构建DocumentBuilderFactory的属性设置
+		//构建DocumentBuilderFactory-设置验证模式和命名空间
 		DocumentBuilderFactory factory = createDocumentBuilderFactory(validationMode, namespaceAware);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Using JAXP provider [" + factory.getClass().getName() + "]");
 		}
+		//构建DocumentBuilder-设置错误处理器
 		DocumentBuilder builder = createDocumentBuilder(factory, entityResolver, errorHandler);
+		//解析配置文件
 		return builder.parse(inputSource);
 	}
 
@@ -94,9 +102,11 @@ public class DefaultDocumentLoader implements DocumentLoader {
 		if (validationMode != XmlValidationModeDetector.VALIDATION_NONE) {
 			factory.setValidating(true);
 			if (validationMode == XmlValidationModeDetector.VALIDATION_XSD) {
+				// 启用命名空间.
 				// Enforce namespace aware for XSD...
 				factory.setNamespaceAware(true);
 				try {
+					//设置xsd验证所需属性
 					factory.setAttribute(SCHEMA_LANGUAGE_ATTRIBUTE, XSD_SCHEMA_LANGUAGE);
 				}
 				catch (IllegalArgumentException ex) {
@@ -132,6 +142,8 @@ public class DefaultDocumentLoader implements DocumentLoader {
 		if (entityResolver != null) {
 			docBuilder.setEntityResolver(entityResolver);
 		}
+		// 同时还要设置DocumentBuilder的ErrorHandler，方便异常抛出
+		// 其中ErrorHandler为类内部变量
 		if (errorHandler != null) {
 			docBuilder.setErrorHandler(errorHandler);
 		}

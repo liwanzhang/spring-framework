@@ -54,6 +54,7 @@ import org.springframework.core.io.Resource;
 @SuppressWarnings({"serial", "all"})
 public class XmlBeanFactory extends DefaultListableBeanFactory {
 
+	// reader 加载bean配置文件
 	private final XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(this);
 
 
@@ -63,7 +64,10 @@ public class XmlBeanFactory extends DefaultListableBeanFactory {
 	 * @param resource the XML resource to load bean definitions from
 	 * @throws BeansException in case of loading or parsing errors
 	 */
-	// 初始化BeanFactory
+	// 初始化 IOC容器
+	// BeanFactory beanFactory=new XmlBeanFactory(new ClassPathResource("spring-config.xml"));
+	// 获取bean beanFactory.getBean("user");
+	// 根据Resource实例化XmlBeanFactory
 	public XmlBeanFactory(Resource resource) throws BeansException {
 		this(resource, null);
 	}
@@ -75,8 +79,10 @@ public class XmlBeanFactory extends DefaultListableBeanFactory {
 	 * @param parentBeanFactory parent bean factory
 	 * @throws BeansException in case of loading or parsing errors
 	 */
+	// 根据Resource和BeanFactory实例化XmlBeanFactory
 	public XmlBeanFactory(Resource resource, BeanFactory parentBeanFactory) throws BeansException {
 		super(parentBeanFactory);
+		// reader 加载bean配置文件
 		this.reader.loadBeanDefinitions(resource);
 	}
 

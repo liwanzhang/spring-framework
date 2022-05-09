@@ -63,6 +63,7 @@ public class ClassPathResource extends AbstractFileResolvingResource {
 	 * @see org.springframework.util.ClassUtils#getDefaultClassLoader()
 	 */
 	public ClassPathResource(String path) {
+		// BeanFactory beanFactory=new XmlBeanFactory(new ClassPathResource("spring-config.xml"));
 		this(path, (ClassLoader) null);
 	}
 
@@ -164,6 +165,7 @@ public class ClassPathResource extends AbstractFileResolvingResource {
 	 * @see java.lang.ClassLoader#getResourceAsStream(String)
 	 * @see java.lang.Class#getResourceAsStream(String)
 	 */
+	// 再来看下如何根据resource获取流的，此处以上面基础用法部分的ClassPathResource为例
 	@Override
 	public InputStream getInputStream() throws IOException {
 		InputStream is;
