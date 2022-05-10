@@ -253,6 +253,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				}
 				try {
 					//3.通过调用传入的ObjectFactory.getObject()方法来创建bean
+					// 我们所熟知的aop，事物管理，依赖注入 等都是在这个过程中实现的。
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
 				}
